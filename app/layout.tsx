@@ -1,8 +1,12 @@
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+
+import React from "react";
+import BreadCrumbsComponent from "@/components/breadcrumbs";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,6 +25,7 @@ export default function RootLayout({
         <body className={inter.className}>
         <div className="flex flex-col min-h-screen">
             <Header />
+            <BreadCrumbsComponent />
             <main className="flex-grow flex items-center justify-center">
                 {children}
             </main>
