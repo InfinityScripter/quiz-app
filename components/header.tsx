@@ -6,10 +6,12 @@ import { Sheet, SheetTrigger, SheetContent, SheetClose } from "@/components/ui/s
 const Header = () => {
     return (
         <header className="bg-purple-600 text-white p-4 flex justify-between items-center">
+            <Link href="/" className="flex items-center">
             <div className="flex items-center">
                 <FaStar className="inline-block mr-2.5" />
                 <h1 className="text-xl font-bold">Quiz App</h1>
             </div>
+            </Link>
             <nav className="hidden sm:flex">
                 <Link href="/" className="mx-2 underline flex items-center">
                     <FaHome className="inline-block mr-2.5" />
