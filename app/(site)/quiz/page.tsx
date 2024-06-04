@@ -1,10 +1,9 @@
 import React from 'react';
+import QuizForm from "@/components/quiz/quiz-form";
 
 const QuizPage = () => {
     return (
-        <div>
-            QuizPage works!
-        </div>
+     <QuizForm/>
     );
 };
 

@@ -7,6 +7,7 @@ import Footer from "@/components/footer";
 
 import React from "react";
 import BreadCrumbsComponent from "@/components/breadcrumbs";
+import {Toaster} from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,6 +28,7 @@ export default function RootLayout({
             <Header />
             <BreadCrumbsComponent />
             <main className="flex-grow flex items-center justify-center">
+                <Toaster />
                 {children}
             </main>
             <Footer />
