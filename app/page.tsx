@@ -13,9 +13,11 @@ export default function Home() {
               <Link href="/about" className="mt-8 inline-block text-gray-500 underline" style={{ fontSize: 'clamp(0.875rem, 2vw, 1.125rem)' }}>Не хотите играть? Узнайте больше о нашем квизе.</Link>
             </div>
             <div className="w-full md:w-1/2 bg-purple-500 flex flex-col items-center justify-center p-8 relative">
+              <Link href="/quiz">
               <Button variant="purple" className="text-xl font-semibold" style={{ fontSize: 'clamp(0.875rem, 2vw, 1.125rem)' }}>
                 Начать игру
               </Button>
+                </Link>
             </div>
         </div>
       </>

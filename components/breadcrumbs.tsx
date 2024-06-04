@@ -30,6 +30,8 @@ const BreadCrumbsComponent = () => {
                         <BreadcrumbPage className="font-semibold text-purple-600">
                             {pathname === '/about' && 'О квизе'}
                             {pathname === '/contact' && 'Контакты'}
+                            {pathname === '/quiz' && 'Квиз'}
+
                         </BreadcrumbPage>
                     </BreadcrumbItem>
                 </BreadcrumbList>
