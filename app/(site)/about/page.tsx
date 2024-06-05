@@ -1,10 +1,9 @@
 import React from 'react';
+import AboutCard from "@/components/about/about-card";
 
 const AboutPage = () => {
     return (
-        <div>
-            AboutPage works!
-        </div>
+        <AboutCard/>
     );
 };
 
