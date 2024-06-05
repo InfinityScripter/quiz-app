@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { questions } from "@/lib/questions";
+import { PuffLoader as Spinner } from "react-spinners";
 
 const ResultForm = () => {
     const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -53,7 +54,7 @@ const ResultForm = () => {
     };
 
     if (isLoading) {
-        return <div>Загрузка...</div>;
+        return <Spinner color="purple" size="large" />
     }
 
     if (isNaN(correctAnswers) || isNaN(totalQuestions)) {
