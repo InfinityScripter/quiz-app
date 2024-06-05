@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { FaStar } from "react-icons/fa";
 import { PuffLoader as Spinner } from "react-spinners";
+import {Input} from "@/components/ui/input";
 
 const FormSchema = z.object({
     answer: z.union([z.string(), z.array(z.string()).min(1, "Выберите хотя бы один ответ")]),
@@ -52,7 +53,7 @@ export function QuizForm() {
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
-            answer: [],
+            answer: '',
         },
     });
 
@@ -121,6 +122,8 @@ export function QuizForm() {
             correct = data.answer === currentQuestion.correctAnswer;
         } else if (currentQuestion.type === 'checkbox' && currentQuestion.correctAnswers) {
             correct = Array.isArray(data.answer) && data.answer.sort().toString() === currentQuestion.correctAnswers.sort().toString();
+        } else if (currentQuestion.type === 'text' && typeof data.answer === 'string' && typeof currentQuestion.correctAnswer === 'string') {
+            correct = data.answer.trim().toLowerCase() === currentQuestion.correctAnswer.trim().toLowerCase();
         }
 
         setIsCorrect(correct);
@@ -207,7 +210,7 @@ export function QuizForm() {
                                 <div key={index} className={`rounded-xl w-full h-2 ${result === null ? 'bg-gray-200' : result ? 'bg-emerald-500' : 'bg-destructive'}`} />
                             ))}
                         </div>
-                        <h2>{questions[currentQuestionIndex].question}</h2>
+                        <h2>{questions[currentQuestionIndex]?.question}</h2>
                         <FormField
                             control={form.control}
                             name="answer"
@@ -215,14 +218,14 @@ export function QuizForm() {
                                 <FormItem className="space-y-3">
                                     <FormLabel>Выберите правильный ответ</FormLabel>
                                     <FormControl>
-                                        {questions[currentQuestionIndex].type === 'radio' ? (
+                                        {questions[currentQuestionIndex]?.type === 'radio' ? (
                                             <RadioGroup
                                                 onValueChange={field.onChange}
                                                 value={field.value as string}
                                                 className="flex flex-col space-y-1"
                                                 disabled={isAnswered}
                                             >
-                                                {questions[currentQuestionIndex].options.map((option) => (
+                                                {questions[currentQuestionIndex]?.options?.map((option) => (
                                                     <FormItem key={option} className="flex items-center space-x-3 space-y-0">
                                                         <FormControl>
                                                             <RadioGroupItem value={option} />
@@ -231,9 +234,9 @@ export function QuizForm() {
                                                     </FormItem>
                                                 ))}
                                             </RadioGroup>
-                                        ) : (
+                                        ) : questions[currentQuestionIndex]?.type === 'checkbox' ? (
                                             <div className="space-y-2">
-                                                {questions[currentQuestionIndex].options.map((option) => (
+                                                {questions[currentQuestionIndex]?.options?.map((option) => (
                                                     <FormItem key={option} className="flex items-center space-x-3 space-y-0">
                                                         <FormControl>
                                                             <Checkbox
@@ -253,6 +256,21 @@ export function QuizForm() {
                                                         <FormLabel className="font-normal">{option}</FormLabel>
                                                     </FormItem>
                                                 ))}
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <FormItem className="flex items-center space-x-3 space-y-0">
+                                                    <FormControl>
+                                                        <Input
+                                                            type="text"
+                                                            value={field.value as string}
+                                                            onChange={field.onChange}
+                                                            disabled={isAnswered}
+                                                            placeholder="Введите ответ"
+                                                            className="bg-purple-50 p-2 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                                                        />
+                                                    </FormControl>
+                                                </FormItem>
                                             </div>
                                         )}
                                     </FormControl>
