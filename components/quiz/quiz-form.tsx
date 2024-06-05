@@ -41,9 +41,11 @@ export function QuizForm() {
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [isAnswered, setIsAnswered] = useState(false);
     const [correctAnswers, setCorrectAnswers] = useState(0);
+    const [userAnswers, setUserAnswers] = useState<string[]>(Array(questions.length).fill(''));
+    const [questionResults, setQuestionResults] = useState<(boolean | null)[]>(Array(questions.length).fill(null));
     const [timerStarted, setTimerStarted] = useState(false);
-    const [timeLeft, setTimeLeft] = useState(30);
-    const [isLoading, setIsLoading] = useState(true); // New loading state
+    const [timeLeft, setTimeLeft] = useState(100);
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
     const form = useForm<z.infer<typeof FormSchema>>({
@@ -73,36 +75,38 @@ export function QuizForm() {
             const data = await response.json();
             setCurrentQuestionIndex(data.currentQuestionIndex);
             setCorrectAnswers(data.correctAnswers);
+            setUserAnswers(data.userAnswers || Array(questions.length).fill(''));
+            setQuestionResults(data.questionResults || Array(questions.length).fill(null));
             setTimeLeft(data.timeLeft);
             setTimerStarted(data.timerStarted);
 
             const newExpiryTimestamp = new Date();
             newExpiryTimestamp.setSeconds(newExpiryTimestamp.getSeconds() + data.timeLeft);
             restart(newExpiryTimestamp, data.timerStarted);
-            setIsLoading(false); // Set loading to false after fetching data
+            setIsLoading(false);
         };
 
         fetchQuizState().catch((error) => {
             console.error('Fetch quiz state failed:', error);
-            setIsLoading(false); // Set loading to false even if fetching fails
+            setIsLoading(false);
         });
     }, [restart]);
 
     useEffect(() => {
         if (timerStarted) {
-            updateQuizState(currentQuestionIndex, correctAnswers, seconds + minutes * 60, true);
+            updateQuizState(currentQuestionIndex, correctAnswers, userAnswers, questionResults, seconds + minutes * 60, true);
         }
-    }, [seconds, minutes, timerStarted, currentQuestionIndex, correctAnswers]);
+    }, [seconds, minutes, timerStarted, currentQuestionIndex, correctAnswers, userAnswers, questionResults]);
 
     const handleStart = () => {
         setTimerStarted(true);
         start();
-        updateQuizState(currentQuestionIndex, correctAnswers, 30, true);
+        updateQuizState(currentQuestionIndex, correctAnswers, userAnswers, questionResults, 100, true);
     };
 
     const handleExpire = () => {
-        updateQuizState(0, correctAnswers, 30, false);
-        router.push(`/result?correctAnswers=${correctAnswers}&totalQuestions=${questions.length}`);
+        updateQuizState(0, correctAnswers, userAnswers, questionResults, 100, false);
+        router.push(`/result?correctAnswers=${correctAnswers}&totalQuestions=${questions.length}&userAnswers=${encodeURIComponent(JSON.stringify(userAnswers))}`);
     };
 
     const handleNextQuestion = async (data: z.infer<typeof FormSchema>) => {
@@ -111,6 +115,11 @@ export function QuizForm() {
 
         setIsCorrect(correct);
         setIsAnswered(true);
+        const newResults = [...questionResults];
+        newResults[currentQuestionIndex] = correct;
+
+        const newUserAnswers = [...userAnswers];
+        newUserAnswers[currentQuestionIndex] = data.answer;
 
         if (correct) {
             setCorrectAnswers((prev) => prev + 1);
@@ -118,26 +127,28 @@ export function QuizForm() {
 
         setTimeout(async () => {
             if (currentQuestionIndex === questions.length - 1) {
-                await updateQuizState(0, 0, 30, false);
-                router.push(`/result?correctAnswers=${correctAnswers + (correct ? 1 : 0)}&totalQuestions=${questions.length}`);
+                await updateQuizState(0, 0, newUserAnswers, newResults, 100, false);
+                router.push(`/result?correctAnswers=${correctAnswers + (correct ? 1 : 0)}&totalQuestions=${questions.length}&userAnswers=${encodeURIComponent(JSON.stringify(newUserAnswers))}`);
             } else {
                 const newIndex = currentQuestionIndex + 1;
                 setCurrentQuestionIndex(newIndex);
                 setIsCorrect(null);
                 setIsAnswered(false);
                 form.reset();
-                await updateQuizState(newIndex, correctAnswers + (correct ? 1 : 0), 30, true);
+                setUserAnswers(newUserAnswers);
+                setQuestionResults(newResults);
+                await updateQuizState(newIndex, correctAnswers + (correct ? 1 : 0), newUserAnswers, newResults, 100, true);
             }
         }, 1000);
     };
 
-    const updateQuizState = async (currentQuestionIndex: number, correctAnswers: number, timeLeft: number, timerStarted: boolean) => {
+    const updateQuizState = async (currentQuestionIndex: number, correctAnswers: number, userAnswers: string[], questionResults: (boolean | null)[], timeLeft: number, timerStarted: boolean) => {
         await fetch('/api/quiz-state', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ currentQuestionIndex, correctAnswers, timeLeft, timerStarted }),
+            body: JSON.stringify({ currentQuestionIndex, correctAnswers, userAnswers, questionResults, timeLeft, timerStarted }),
         });
     };
 
@@ -181,6 +192,11 @@ export function QuizForm() {
                             <h3 className="text-xl font-bold">Вопрос {currentQuestionIndex + 1} из {questions.length}</h3>
                         </div>
                         <Progress value={(currentQuestionIndex / questions.length) * 100} className="my-4 " />
+                        <div className="flex space-x-1">
+                            {questionResults.map((result, index) => (
+                                <div key={index} className={`rounded-xl w-full h-2 ${result === null ? 'bg-gray-200' : result ? 'bg-emerald-500' : 'bg-destructive'}`} />
+                            ))}
+                        </div>
                         <h2>{questions[currentQuestionIndex].question}</h2>
                         <FormField
                             control={form.control}

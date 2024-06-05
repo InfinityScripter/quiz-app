@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import {questions} from "@/lib/questions";
 
-let quizState = {
+export let quizState = {
     currentQuestionIndex: 0,
     correctAnswers: 0,
-    timeLeft: 30,
+    questionResults: Array(questions.length).fill(null),
+    timeLeft: 100,
     timerStarted: false,
+
 };
 
 export async function GET() {
@@ -13,7 +16,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
     const body = await req.json();
-    const { currentQuestionIndex, correctAnswers, timeLeft, timerStarted } = body;
-    quizState = { currentQuestionIndex, correctAnswers, timeLeft, timerStarted };
+    const { currentQuestionIndex, correctAnswers, questionResults, timeLeft, timerStarted } = body;
+    quizState = { currentQuestionIndex, correctAnswers, questionResults, timeLeft, timerStarted };
     return NextResponse.json({ message: 'Quiz state updated' });
 }
