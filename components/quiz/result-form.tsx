@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { questions } from "@/lib/questions";
 import { PuffLoader as Spinner } from "react-spinners";
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 const ResultForm = () => {
     const [correctAnswers, setCorrectAnswers] = useState(0);
     const [totalQuestions, setTotalQuestions] = useState(questions.length);
     const [userAnswers, setUserAnswers] = useState<Array<string | string[]>>([]);
+    const [questionResults, setQuestionResults] = useState<(boolean | null)[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
@@ -24,6 +26,7 @@ const ResultForm = () => {
             setCorrectAnswers(data.correctAnswers);
             setTotalQuestions(questions.length);
             setUserAnswers(data.userAnswers || []);
+            setQuestionResults(data.questionResults || []);
             setIsLoading(false);
         };
 
@@ -74,6 +77,7 @@ const ResultForm = () => {
                             <TableHead>Вопрос</TableHead>
                             <TableHead className="text-center">Ваш ответ</TableHead>
                             <TableHead className="text-center">Правильный ответ</TableHead>
+                            <TableHead className="text-center">Результат</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -89,6 +93,10 @@ const ResultForm = () => {
                                     {Array.isArray(question.correctAnswers)
                                         ? question.correctAnswers.join(', ')
                                         : question.correctAnswer}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                    {questionResults[index] === true && <FaCheckCircle color="green" />}
+                                    {questionResults[index] === false && <FaTimesCircle color="red" />}
                                 </TableCell>
                             </TableRow>
                         ))}
