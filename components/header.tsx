@@ -25,6 +25,10 @@ const Header = () => {
                     <FaMailBulk className="inline-block mr-2.5" />
                     Контакты
                 </Link>
+                <Link href="/manage" className="mx-2 underline flex items-center">
+                    <FaStar className="inline-block mr-2.5" />
+                    Управление
+                </Link>
             </nav>
             <div className="sm:hidden">
                 <Sheet>
@@ -51,6 +55,12 @@ const Header = () => {
                                 <Link href="/contact" className="flex items-center text-purple-600 hover:underline">
                                     <FaMailBulk className="inline-block mr-2.5" />
                                     Контакты
+                                </Link>
+                            </SheetClose>
+                            <SheetClose asChild>
+                                <Link href="/manage" className="flex items-center text-purple-600 hover:underline">
+                                    <FaStar className="inline-block mr-2.5" />
+                                    Управление
                                 </Link>
                             </SheetClose>
                         </nav>

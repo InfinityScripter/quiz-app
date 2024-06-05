@@ -32,7 +32,7 @@ const BreadCrumbsComponent = () => {
                             {pathname === '/contact' && 'Контакты'}
                             {pathname === '/quiz' && 'Квиз'}
                             {pathname === '/result' && 'Результаты'}
-
+                            {pathname === '/manage' && 'Управление'}
                         </BreadcrumbPage>
                     </BreadcrumbItem>
                 </BreadcrumbList>

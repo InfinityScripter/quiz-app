@@ -15,7 +15,7 @@ const ContactCard = () => {
                         <AvatarImage src="/avatar.jpeg" alt="Михаил" />
                         <AvatarFallback>М</AvatarFallback>
                     </Avatar>
-                    <h3 className="text-xl font-semibold">Привет! Меня зовут Михаил</h3>
+                    <h3 className="text-xl font-semibold">Талалаев Михаил</h3>
                     <p className="text-lg">Фронтенд-разработчик</p>
                     <p className="text-lg flex items-center justify-center space-x-2">
                         <FaCity className="inline-block" size={20} /> <span>Санкт-Петербург</span>
