@@ -10,7 +10,7 @@ import { PuffLoader as Spinner } from "react-spinners";
 const ResultForm = () => {
     const [correctAnswers, setCorrectAnswers] = useState(0);
     const [totalQuestions, setTotalQuestions] = useState(questions.length);
-    const [userAnswers, setUserAnswers] = useState<string[]>([]);
+    const [userAnswers, setUserAnswers] = useState<Array<string | string[]>>([]);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
@@ -58,7 +58,7 @@ const ResultForm = () => {
     }
 
     if (isNaN(correctAnswers) || isNaN(totalQuestions)) {
-        return <div>Нет данных для отображения результатов.</div>;
+        return <div>Нет данных.</div>;
     }
 
     return (
@@ -80,8 +80,16 @@ const ResultForm = () => {
                         {questions.map((question, index) => (
                             <TableRow key={index}>
                                 <TableCell className="text-left">{question.question}</TableCell>
-                                <TableCell className="text-center">{userAnswers[index] || 'Нет ответа'}</TableCell>
-                                <TableCell className="text-center">{question.correctAnswer}</TableCell>
+                                <TableCell className="text-center">
+                                    {Array.isArray(userAnswers[index])
+                                        ? (userAnswers[index] as string[]).join(', ')
+                                        : (userAnswers[index] || 'Нет ответа')}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                    {Array.isArray(question.correctAnswers)
+                                        ? question.correctAnswers.join(', ')
+                                        : question.correctAnswer}
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

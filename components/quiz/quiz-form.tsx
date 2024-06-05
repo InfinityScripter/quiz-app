@@ -15,6 +15,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FormSuccess } from "@/components/form-success";
 import { FormError } from "@/components/form-error";
 import { Progress } from "@/components/ui/progress";
@@ -33,7 +34,7 @@ import { FaStar } from "react-icons/fa";
 import { PuffLoader as Spinner } from "react-spinners";
 
 const FormSchema = z.object({
-    answer: z.string().nonempty("Выберите ответ"),
+    answer: z.union([z.string(), z.array(z.string()).min(1, "Выберите хотя бы один ответ")]),
 });
 
 export function QuizForm() {
@@ -41,7 +42,7 @@ export function QuizForm() {
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [isAnswered, setIsAnswered] = useState(false);
     const [correctAnswers, setCorrectAnswers] = useState(0);
-    const [userAnswers, setUserAnswers] = useState<string[]>(Array(questions.length).fill(''));
+    const [userAnswers, setUserAnswers] = useState<Array<string | string[]>>(Array(questions.length).fill(''));
     const [questionResults, setQuestionResults] = useState<(boolean | null)[]>(Array(questions.length).fill(null));
     const [timerStarted, setTimerStarted] = useState(false);
     const [timeLeft, setTimeLeft] = useState(100);
@@ -50,6 +51,9 @@ export function QuizForm() {
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
+        defaultValues: {
+            answer: [],
+        },
     });
 
     const expiryTimestamp = useRef(new Date());
@@ -111,7 +115,13 @@ export function QuizForm() {
 
     const handleNextQuestion = async (data: z.infer<typeof FormSchema>) => {
         const currentQuestion = questions[currentQuestionIndex];
-        const correct = data.answer === currentQuestion.correctAnswer;
+        let correct = false;
+
+        if (currentQuestion.type === 'radio') {
+            correct = data.answer === currentQuestion.correctAnswer;
+        } else if (currentQuestion.type === 'checkbox' && currentQuestion.correctAnswers) {
+            correct = Array.isArray(data.answer) && data.answer.sort().toString() === currentQuestion.correctAnswers.sort().toString();
+        }
 
         setIsCorrect(correct);
         setIsAnswered(true);
@@ -134,7 +144,7 @@ export function QuizForm() {
                 setCurrentQuestionIndex(newIndex);
                 setIsCorrect(null);
                 setIsAnswered(false);
-                form.reset();
+                form.reset({ answer: questions[newIndex].type === 'checkbox' ? [] : '' });
                 setUserAnswers(newUserAnswers);
                 setQuestionResults(newResults);
                 await updateQuizState(newIndex, correctAnswers + (correct ? 1 : 0), newUserAnswers, newResults, 100, true);
@@ -142,7 +152,7 @@ export function QuizForm() {
         }, 1000);
     };
 
-    const updateQuizState = async (currentQuestionIndex: number, correctAnswers: number, userAnswers: string[], questionResults: (boolean | null)[], timeLeft: number, timerStarted: boolean) => {
+    const updateQuizState = async (currentQuestionIndex: number, correctAnswers: number, userAnswers: Array<string | string[]>, questionResults: (boolean | null)[], timeLeft: number, timerStarted: boolean) => {
         await fetch('/api/quiz-state', {
             method: 'POST',
             headers: {
@@ -205,21 +215,46 @@ export function QuizForm() {
                                 <FormItem className="space-y-3">
                                     <FormLabel>Выберите правильный ответ</FormLabel>
                                     <FormControl>
-                                        <RadioGroup
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                            className="flex flex-col space-y-1"
-                                            disabled={isAnswered}
-                                        >
-                                            {questions[currentQuestionIndex].options.map((option) => (
-                                                <FormItem key={option} className="flex items-center space-x-3 space-y-0">
-                                                    <FormControl>
-                                                        <RadioGroupItem value={option} />
-                                                    </FormControl>
-                                                    <FormLabel className="font-normal">{option}</FormLabel>
-                                                </FormItem>
-                                            ))}
-                                        </RadioGroup>
+                                        {questions[currentQuestionIndex].type === 'radio' ? (
+                                            <RadioGroup
+                                                onValueChange={field.onChange}
+                                                value={field.value as string}
+                                                className="flex flex-col space-y-1"
+                                                disabled={isAnswered}
+                                            >
+                                                {questions[currentQuestionIndex].options.map((option) => (
+                                                    <FormItem key={option} className="flex items-center space-x-3 space-y-0">
+                                                        <FormControl>
+                                                            <RadioGroupItem value={option} />
+                                                        </FormControl>
+                                                        <FormLabel className="font-normal">{option}</FormLabel>
+                                                    </FormItem>
+                                                ))}
+                                            </RadioGroup>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {questions[currentQuestionIndex].options.map((option) => (
+                                                    <FormItem key={option} className="flex items-center space-x-3 space-y-0">
+                                                        <FormControl>
+                                                            <Checkbox
+                                                                checked={Array.isArray(field.value) && field.value.includes(option)}
+                                                                onCheckedChange={(checked) => {
+                                                                    const newValue = Array.isArray(field.value) ? [...field.value] : [];
+                                                                    if (checked) {
+                                                                        newValue.push(option);
+                                                                    } else {
+                                                                        newValue.splice(newValue.indexOf(option), 1);
+                                                                    }
+                                                                    field.onChange(newValue);
+                                                                }}
+                                                                disabled={isAnswered}
+                                                            />
+                                                        </FormControl>
+                                                        <FormLabel className="font-normal">{option}</FormLabel>
+                                                    </FormItem>
+                                                ))}
+                                            </div>
+                                        )}
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
