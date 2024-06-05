@@ -31,6 +31,7 @@ const BreadCrumbsComponent = () => {
                             {pathname === '/about' && 'О квизе'}
                             {pathname === '/contact' && 'Контакты'}
                             {pathname === '/quiz' && 'Квиз'}
+                            {pathname === '/result' && 'Результаты'}
 
                         </BreadcrumbPage>
                     </BreadcrumbItem>
