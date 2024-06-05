@@ -5,7 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const ContactCard = () => {
     return (
-        <div className="flex justify-center items-center py-12 bg-gray-50">
+        <div className="flex justify-center items-center py-12">
             <Card className="min-w-[500px] max-w-lg shadow-lg rounded-lg overflow-hidden">
                 <CardHeader className="text-center bg-purple-600 text-white py-6">
                     <CardTitle className="text-3xl font-bold">Контакты</CardTitle>
