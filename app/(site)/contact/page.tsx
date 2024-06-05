@@ -1,10 +1,9 @@
 import React from 'react';
+import ContactCard from "@/components/contact/contact-card";
 
 const ContactPage = () => {
     return (
-        <div>
-Contact vs me
-        </div>
+<ContactCard/>
     );
 };
 
