@@ -15,7 +15,7 @@ export default function Home() {
             <div className="w-full md:w-1/2 bg-purple-500 flex flex-col items-center justify-center p-8 relative">
               <Link href="/quiz">
               <Button variant="purple" className="text-xl font-semibold" style={{ fontSize: 'clamp(0.875rem, 2vw, 1.125rem)' }}>
-                Начать игру
+              &#x1F680;  Начать игру
               </Button>
                 </Link>
             </div>
