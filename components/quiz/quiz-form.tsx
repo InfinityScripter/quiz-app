@@ -1,9 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { useState, useEffect, useRef } from "react";
+import { useForm, Resolver } from "react-hook-form";
+import { z, ZodTypeAny } from "zod";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
@@ -32,11 +32,28 @@ import {
 } from "@/components/ui/dialog";
 import { FaStar } from "react-icons/fa";
 import { PuffLoader as Spinner } from "react-spinners";
-import {Input} from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 
-const FormSchema = z.object({
-    answer: z.union([z.string(), z.array(z.string()).min(1, "Выберите хотя бы один ответ")]),
-});
+const getValidationSchema = (questionType: string): ZodTypeAny => {
+    switch (questionType) {
+        case 'radio':
+            return z.object({
+                answer: z.string().nonempty("Выберите один из вариантов ответа"),
+            });
+        case 'checkbox':
+            return z.object({
+                answer: z.array(z.string()).min(1, "Выберите хотя бы один ответ"),
+            });
+        case 'text':
+            return z.object({
+                answer: z.string().nonempty("Поле не может быть пустым"),
+            });
+        default:
+            return z.object({
+                answer: z.string(),
+            });
+    }
+};
 
 export function QuizForm() {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -50,10 +67,14 @@ export function QuizForm() {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
-    const form = useForm<z.infer<typeof FormSchema>>({
-        resolver: zodResolver(FormSchema),
+    const currentQuestion = questions[currentQuestionIndex];
+    const validationSchema = useMemo(() => getValidationSchema(currentQuestion.type), [currentQuestionIndex]);
+    const resolver: Resolver<z.infer<typeof validationSchema>> = zodResolver(validationSchema);
+
+    const form = useForm<z.infer<typeof validationSchema>>({
+        resolver,
         defaultValues: {
-            answer: '',
+            answer: currentQuestion.type === 'checkbox' ? [] : '',
         },
     });
 
@@ -114,8 +135,7 @@ export function QuizForm() {
         router.push(`/result`);
     };
 
-    const handleNextQuestion = async (data: z.infer<typeof FormSchema>) => {
-        const currentQuestion = questions[currentQuestionIndex];
+    const handleNextQuestion = async (data: z.infer<typeof validationSchema>) => {
         let correct = false;
 
         if (currentQuestion.type === 'radio') {
