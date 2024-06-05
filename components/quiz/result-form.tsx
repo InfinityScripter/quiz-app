@@ -1,16 +1,36 @@
 "use client";
 
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { questions } from "@/lib/questions";
 
 const ResultForm = () => {
-    const searchParams = useSearchParams();
-    const correctAnswers = parseInt(searchParams.get('correctAnswers') || '0', 10);
-    const totalQuestions = parseInt(searchParams.get('totalQuestions') || '0', 10);
-    const userAnswers = JSON.parse(decodeURIComponent(searchParams.get('userAnswers') || '[]'));
+    const [correctAnswers, setCorrectAnswers] = useState(0);
+    const [totalQuestions, setTotalQuestions] = useState(questions.length);
+    const [userAnswers, setUserAnswers] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
+
+    useEffect(() => {
+        const fetchQuizState = async () => {
+            const response = await fetch('/api/quiz-state');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            setCorrectAnswers(data.correctAnswers);
+            setTotalQuestions(questions.length);
+            setUserAnswers(data.userAnswers || []);
+            setIsLoading(false);
+        };
+
+        fetchQuizState().catch((error) => {
+            console.error('Fetch quiz state failed:', error);
+            setIsLoading(false);
+        });
+    }, []);
 
     const completionPercentage = ((correctAnswers / totalQuestions) * 100).toFixed(0);
 
@@ -25,12 +45,16 @@ const ResultForm = () => {
                 correctAnswers: 0,
                 userAnswers: Array(questions.length).fill(''),
                 questionResults: Array(questions.length).fill(null),
-                timeLeft: 30,
+                timeLeft: 100,
                 timerStarted: false
             }),
         });
         router.push('/');
     };
+
+    if (isLoading) {
+        return <div>Загрузка...</div>;
+    }
 
     if (isNaN(correctAnswers) || isNaN(totalQuestions)) {
         return <div>Нет данных для отображения результатов.</div>;
@@ -55,7 +79,7 @@ const ResultForm = () => {
                         {questions.map((question, index) => (
                             <TableRow key={index}>
                                 <TableCell className="text-left">{question.question}</TableCell>
-                                <TableCell className="text-center">{userAnswers[index]}</TableCell>
+                                <TableCell className="text-center">{userAnswers[index] || 'Нет ответа'}</TableCell>
                                 <TableCell className="text-center">{question.correctAnswer}</TableCell>
                             </TableRow>
                         ))}

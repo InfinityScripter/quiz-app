@@ -106,7 +106,7 @@ export function QuizForm() {
 
     const handleExpire = () => {
         updateQuizState(0, correctAnswers, userAnswers, questionResults, 100, false);
-        router.push(`/result?correctAnswers=${correctAnswers}&totalQuestions=${questions.length}&userAnswers=${encodeURIComponent(JSON.stringify(userAnswers))}`);
+        router.push(`/result`);
     };
 
     const handleNextQuestion = async (data: z.infer<typeof FormSchema>) => {
@@ -127,8 +127,8 @@ export function QuizForm() {
 
         setTimeout(async () => {
             if (currentQuestionIndex === questions.length - 1) {
-                await updateQuizState(0, 0, newUserAnswers, newResults, 100, false);
-                router.push(`/result?correctAnswers=${correctAnswers + (correct ? 1 : 0)}&totalQuestions=${questions.length}&userAnswers=${encodeURIComponent(JSON.stringify(newUserAnswers))}`);
+                await updateQuizState(0, correctAnswers + (correct ? 1 : 0), newUserAnswers, newResults, 100, false);
+                router.push(`/result`);
             } else {
                 const newIndex = currentQuestionIndex + 1;
                 setCurrentQuestionIndex(newIndex);
