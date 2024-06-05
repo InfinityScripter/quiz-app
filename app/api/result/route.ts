@@ -1,10 +1,10 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { quizState } from '@/app/api/quiz-state/route';
+import { NextRequest, NextResponse } from 'next/server';
+import { quizState } from "@/lib/quizState";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === 'GET') {
-        res.status(200).json(quizState);
-    } else {
-        res.status(405).json({ message: 'Method not allowed' });
-    }
+export async function GET() {
+    return NextResponse.json(quizState);
+}
+
+export async function POST(req: NextRequest) {
+    return NextResponse.json({ message: 'Method not allowed' }, { status: 405 });
 }
